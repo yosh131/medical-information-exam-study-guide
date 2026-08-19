@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from content_helpers import FLOW, NOTE, P, SEC, TABLE, TRAP, UL
+from content_helpers import FLOW, NOTE, P, TABLE, TRAP, UL
 
 
 def _packet(packets: list[dict[str, Any]], title: str) -> dict[str, Any]:
@@ -44,33 +44,26 @@ def apply_exam_updates(packets: list[dict[str, Any]]) -> list[dict[str, Any]]:
     _update_ris(_packet(packets, "RIS・PACS・画像連携"))
     _update_departments(_packet(packets, "中央診療部門"))
     _update_devices(_packet(packets, "医療安全部門"))
-    _update_storage(_packet(packets, "RAID・ストレージ"))
     _update_wifi(_packet(packets, "LAN・Wi-Fi"))
     _update_availability(_packet(packets, "可用性・障害対策"))
     _update_auth(_packet(packets, "LDAP・認証"))
-    _update_it_basics(_packet(packets, "UML"))
-    _update_medical_basics(_packet(packets, "生理機能検査"))
     return packets
 
 
 def _update_foundation(packet: dict[str, Any]) -> None:
     if not _extend_once(packet):
         return
-    packet["sections"].append(
-        SEC(
-            "5. 歯科・口腔で狙われる疾患名",
-            TABLE(
-                ["用語", "見分ける軸", "試験での境界"],
-                [
-                    ["う蝕", "歯の硬組織が脱灰・崩壊", "いわゆるむし歯。歯髄炎や根尖性歯周炎へ進むことがある。"],
-                    ["歯周病", "歯肉・歯周組織の炎症と破壊", "う蝕とは病変部位が異なる。歯周ポケット、歯槽骨吸収等。"],
-                    ["歯髄炎／根尖性歯周炎", "歯髄・根尖周囲の炎症", "保存処置、根管治療などと結び付けて読む。"],
-                    ["口内炎／口唇ヘルペス", "粘膜炎症／ウイルス性水疱", "歯科疾患名と感染症名を混同しない。"],
-                    ["補綴・保存・口腔外科", "欠損補う／歯を保存／抜歯等", "歯科レセプトでは処置・材料・補綴物を区別する。"],
-                ],
-                [22, 38, 40],
-                small=True,
-            ),
+    _section(packet, "4.")["blocks"].append(
+        TABLE(
+            ["歯科・口腔の固有名詞", "見分ける軸", "試験での境界"],
+            [
+                ["う蝕", "歯の硬組織が脱灰・崩壊", "いわゆるむし歯。歯髄炎や根尖性歯周炎へ進むことがある。"],
+                ["歯周病", "歯肉・歯周組織の炎症と破壊", "う蝕とは病変部位が異なる。歯周ポケット、歯槽骨吸収等。"],
+                ["口内炎／口唇ヘルペス", "粘膜炎症／ウイルス性水疱", "歯科疾患名と感染症名を混同しない。"],
+                ["補綴・保存・口腔外科", "欠損補う／歯を保存／抜歯等", "歯科レセプトでは処置・材料・補綴物を区別する。"],
+            ],
+            [25, 35, 40],
+            small=True,
         )
     )
     packet["memory"].append("歯科は、う蝕＝歯、歯周病＝歯周組織、補綴＝欠損補う、保存＝歯を残す処置。")
@@ -453,29 +446,6 @@ def _update_devices(packet: dict[str, Any]) -> None:
     packet["memory"].append("医療機器管理＝台帳＋保守点検＋不具合・回収情報。型式・シリアル・場所を追跡する。")
 
 
-def _update_storage(packet: dict[str, Any]) -> None:
-    if not _extend_once(packet):
-        return
-    packet["sections"].append(
-        SEC(
-            "4. コンピュータ構成と記憶媒体",
-            TABLE(
-                ["分類", "代表語", "要点"],
-                [
-                    ["5大装置", "入力、出力、記憶、演算、制御", "CPUは演算・制御、主記憶は実行中データ、補助記憶は永続保存。"],
-                    ["CPU動作", "命令フェッチ、デコード、実行", "クロック、キャッシュ、主記憶アクセスを区別。"],
-                    ["記憶媒体", "HDD、SSD、フラッシュメモリ、CD/DVD/Blu-ray、LTO", "SSDは半導体、HDDは磁気ディスク、光ディスクはレーザー。"],
-                    ["OS周辺", "カーネル、シェル、ドライバ、ファームウェア、BIOS/UEFI", "OS本体・利用者窓口・機器制御・機器内蔵制御を分ける。"],
-                    ["接続", "USB、HDMI、DisplayPort、RJ-45", "データ、映像、ネットワーク等の用途を対応づける。"],
-                ],
-                [18, 36, 46],
-                small=True,
-            ),
-        )
-    )
-    packet["memory"].append("CPU＝フェッチ・デコード・実行。カーネル＝OS中核、シェル＝操作窓口、ドライバ＝機器制御。")
-
-
 def _update_wifi(packet: dict[str, Any]) -> None:
     if not _extend_once(packet):
         return
@@ -540,64 +510,4 @@ def _update_auth(packet: dict[str, Any]) -> None:
         )
     )
     packet["memory"].append("PKI＝CAが証明書で公開鍵を信頼させる。署名は秘密鍵で作り公開鍵で検証、ハッシュは改ざん検知。")
-
-
-def _update_it_basics(packet: dict[str, Any]) -> None:
-    if not _extend_once(packet):
-        return
-    packet["sections"].append(
-        SEC(
-            "4. 情報表現・プログラミング・開発管理",
-            TABLE(
-                ["領域", "頻出語", "判定の核"],
-                [
-                    ["数値表現", "bit、Byte、2進、16進、k/M/G/T、2の補数", "1Byte＝8bit。2進4bitが16進1桁。接頭辞と単位を読む。"],
-                    ["論理演算", "AND、OR、XOR、NOT、NAND、NOR", "ANDは両方1、ORはどちらか1、XORは異なると1。"],
-                    ["デジタル化", "標本化、量子化、符号化、ナイキスト周波数", "最大周波数の2倍以上で標本化。量子化bit数で階調数が決まる。"],
-                    ["データ構造", "配列、リスト、スタック、キュー、木", "スタックはLIFO、キューはFIFO。"],
-                    ["言語処理", "コンパイラ、インタプリタ、ソースコード、デバッグ", "一括翻訳と逐次実行を区別する。"],
-                    ["開発モデル", "ウォーターフォール、アジャイル、プロトタイピング", "工程順序固定か、反復・適応かを読む。"],
-                    ["管理技法", "WBS、ガントチャート、PERT、クリティカルパス", "作業分解、日程可視化、依存関係と最長経路。"],
-                    ["新技術", "IoT、AR、VR、生成AI、ハルシネーション", "ARは現実重畳、VRは仮想空間、生成AIはもっともらしい誤りに注意。"],
-                ],
-                [20, 40, 40],
-                small=True,
-            ),
-            NOTE("フローチャートとトレース", "開始・終了、処理、判断、入出力を記号で表し、変数の値を上から順に追う。繰返しでは初期値、終了条件、更新処理を確認する。", "info"),
-        )
-    )
-    packet["memory"].extend(
-        [
-            "1Byte＝8bit、16進1桁＝2進4bit、スタック＝LIFO、キュー＝FIFO。",
-            "標本化→量子化→符号化。ナイキストは最大周波数の2倍以上。",
-            "WBS＝作業分解、ガント＝日程表、PERT＝依存関係、クリティカルパス＝最長経路。",
-        ]
-    )
-
-
-def _update_medical_basics(packet: dict[str, Any]) -> None:
-    if not _extend_once(packet):
-        return
-    packet["sections"].append(
-        SEC(
-            "5. 人体・疾患・検査の基本対応",
-            TABLE(
-                ["項目", "代表語", "試験での境界"],
-                [
-                    ["脳幹", "中脳、橋、延髄", "大脳・小脳と区別。生命維持機能と関連する。"],
-                    ["動脈血の流れ", "肺静脈→左心房→左心室→大動脈", "肺動脈は静脈血を肺へ送る点に注意。"],
-                    ["腹腔内臓器", "肝臓、胆嚢、膵臓、脾臓、小腸、大腸など", "肺・心臓は胸腔。腎臓は後腹膜臓器として問われることがある。"],
-                    ["代謝・内分泌", "糖尿病、甲状腺疾患、痛風", "膵臓ホルモンはインスリンとグルカゴンが代表。"],
-                    ["呼吸器", "気管支喘息、COPD、肺炎、睡眠時無呼吸症候群", "スパイロメトリー、PSG、血液ガスと結び付ける。"],
-                    ["血液・造血", "貧血、白血病、血小板異常", "血算、血液像、骨髄検査が代表。"],
-                    ["神経", "てんかん、脳梗塞、パーキンソン病", "EEGはてんかん性放電、CT/MRIは形態・病変評価。"],
-                    ["新生児", "アプガースコア、NICU", "心拍、呼吸、筋緊張、反射、皮膚色を評価。"],
-                    ["治療目的", "根治的、姑息的、対症療法、リハビリ", "治癒を目指すか、症状緩和・機能回復かで判定する。"],
-                ],
-                [20, 38, 42],
-                small=True,
-            ),
-        )
-    )
-    packet["memory"].append("人体対応＝脳幹は中脳・橋・延髄、動脈血は肺静脈→左心→大動脈、膵ホルモンはインスリン・グルカゴン。")
 
