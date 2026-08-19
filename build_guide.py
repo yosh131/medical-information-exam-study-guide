@@ -34,11 +34,12 @@ from content_foundation import PACKETS_FOUNDATION
 from content_splus import PACKETS_SPLUS
 from content_s import PACKETS_S
 from content_a import PACKETS_A
+from content_exam_updates import apply_exam_updates
 
 
 ROOT = Path(__file__).resolve().parent
-HTML_OUT = ROOT / "output" / "html" / "medical_information_exam_packets_1-46.html"
-PDF_OUT = ROOT / "output" / "pdf" / "medical_information_exam_packets_1-46.pdf"
+HTML_OUT = ROOT / "docs" / "index.html"
+PDF_OUT = ROOT / "docs" / "medical_information_exam_packets_1-46.pdf"
 FONT_PATH = ROOT / "tmp" / "pdfs" / "DroidSansFallback.ttf"
 
 AS_OF = "2026年8月18日"
@@ -776,7 +777,7 @@ def build_pdf(packets: list[dict[str, Any]]) -> None:
 
 
 def main() -> None:
-    packets = PACKETS_FOUNDATION + PACKETS_SPLUS + PACKETS_S + PACKETS_A
+    packets = apply_exam_updates(PACKETS_FOUNDATION + PACKETS_SPLUS + PACKETS_S + PACKETS_A)
     numbers = [p["n"] for p in packets]
     if numbers != list(range(1, 47)):
         raise ValueError(f"Packet numbers are incomplete: {numbers}")
